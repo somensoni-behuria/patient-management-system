@@ -126,31 +126,22 @@ jobs:
           DIGEST: ${{ steps.build.outputs.digest }}
         run: cosign sign --yes "${IMAGE}@${DIGEST}"
 
-      - name: Scan image (Trivy, table output)
-        uses: aquasecurity/trivy-action@v0.28.0
+      # Scan the pushed image with the Trivy CLI directly (avoids composite-action version drift).
+      # Report-only (exit-code 0): base-image CVEs shouldn't block a release. Tighten to fail on
+      # CRITICAL once you triage the base image. SARIF is kept as an artifact (uploading it to
+      # code scanning needs GitHub Advanced Security on a private repo).
+      - name: Scan image (Trivy)
         env:
           TRIVY_USERNAME: ${{ github.actor }}
           TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}@${{ steps.build.outputs.digest }}
-          format: table
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          # Report-only: base-image CVEs shouldn't block a release. Tighten to fail on CRITICAL
-          # once you triage the base image, or wire SARIF into code scanning (needs GH Advanced
-          # Security on a private repo).
-          exit-code: '0'
-
-      - name: Scan image (Trivy, SARIF artifact)
-        uses: aquasecurity/trivy-action@v0.28.0
-        env:
-          TRIVY_USERNAME: ${{ github.actor }}
-          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}@${{ steps.build.outputs.digest }}
-          format: sarif
-          output: trivy-${{ matrix.service }}.sarif
-          ignore-unfixed: true
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}@${{ steps.build.outputs.digest }}
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+            | sh -s -- -b /usr/local/bin
+          trivy --version
+          trivy image --severity CRITICAL,HIGH --ignore-unfixed --exit-code 0 "$IMAGE_REF"
+          trivy image --format sarif --ignore-unfixed \
+            --output "trivy-${{ matrix.service }}.sarif" "$IMAGE_REF"
 
       - name: Upload SARIF artifact
         if: always()
