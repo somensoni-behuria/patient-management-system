@@ -109,6 +109,30 @@ Integration tests (need the stack running) are gated behind a profile:
 mvn -q verify -pl integration-tests -Pintegration     # after docker compose up
 ```
 
+## Container images
+
+The **Release** workflow ([`.github/workflows/release.yml`](.github/workflows/release.yml))
+publishes a container image per service to GitHub Container Registry on pushes to `main` and on
+`v*` tags:
+
+```
+ghcr.io/somensoni-behuria/patient-management-system/<service>
+```
+
+Images are **multi-arch** (`linux/amd64`, `linux/arm64`), carry **SBOM + provenance
+attestations**, are **signed keylessly with cosign (Sigstore)**, and are scanned with **Trivy**.
+Tags: `latest` (default branch), `main`, `sha-<commit>`, and `X.Y.Z` / `X.Y` for version tags.
+
+```bash
+# Pull and run a published image
+docker pull ghcr.io/somensoni-behuria/patient-management-system/api-gateway:latest
+
+# Verify the signature (keyless / Sigstore)
+cosign verify ghcr.io/somensoni-behuria/patient-management-system/api-gateway:latest \
+  --certificate-identity-regexp "^https://github.com/somensoni-behuria/patient-management-system/.github/workflows/release.yml@" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
 ## Infrastructure as code (AWS CDK -> LocalStack)
 
 The [`infrastructure/`](infrastructure/) module is a standalone AWS CDK (Java) app that
