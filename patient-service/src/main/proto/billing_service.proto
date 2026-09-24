@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "billing";
+
+// Client-side copy of the billing service contract. patient-service uses this to generate the
+// gRPC stub it calls when a patient is created. Must stay in sync with billing-service.
+
+service BillingService {
+  rpc CreateBillingAccount (BillingRequest) returns (BillingResponse);
+}
+
+message BillingRequest {
+  string patient_id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message BillingResponse {
+  string account_id = 1;
+  string status = 2;
+}

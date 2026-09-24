@@ -1,0 +1,37 @@
+# Build output
+target/
+build/
+out/
+*.class
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Env / secrets
+.env
+!.env.example
+
+# CDK / LocalStack
+infrastructure/cdk.out/
+infrastructure/.cdk.staging/
+volume/
+localstack-volume/
+
+# Node (if any tooling)
+node_modules/

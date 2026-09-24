@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Standalone AWS CDK (Java) app. Intentionally NOT part of the Spring reactor: it is
+         built/synth'd on demand via cdk (see localstack-deploy.sh), independent of the services. -->
+    <groupId>com.pm</groupId>
+    <artifactId>infrastructure</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>infrastructure</name>
+    <description>AWS CDK stack (deployed to LocalStack) for the Patient Management System</description>
+
+    <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cdk.version>2.270.0</cdk.version>
+        <constructs.version>10.8.1</constructs.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>aws-cdk-lib</artifactId>
+            <version>${cdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.constructs</groupId>
+            <artifactId>constructs</artifactId>
+            <version>${constructs.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>com.pm.stack.LocalStack</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,10 @@
+@gateway = http://localhost:4004
+@token = REPLACE_WITH_JWT
+
+### Analytics summary (JWT-protected, read-only)
+GET {{gateway}}/api/analytics/summary
+Authorization: Bearer {{token}}
+
+### Count of patients created
+GET {{gateway}}/api/analytics/patients/count
+Authorization: Bearer {{token}}

@@ -1,0 +1,7 @@
+{
+  "app": "mvn -e -q compile exec:java",
+  "output": "cdk.out",
+  "context": {
+    "@aws-cdk/core:bootstrapQualifier": "hnb659fds"
+  }
+}

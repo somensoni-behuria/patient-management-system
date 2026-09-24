@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: 'patient-management-services'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['api-gateway:4004']
+        labels: { application: api-gateway }
+      - targets: ['patient-service:4000']
+        labels: { application: patient-service }
+      - targets: ['auth-service:4005']
+        labels: { application: auth-service }
+      - targets: ['analytics-service:4002']
+        labels: { application: analytics-service }
+      - targets: ['notification-service:4003']
+        labels: { application: notification-service }
+      - targets: ['billing-service:4001']
+        labels: { application: billing-service }

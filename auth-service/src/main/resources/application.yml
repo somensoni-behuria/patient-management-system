@@ -1,0 +1,51 @@
+server:
+  port: 4005
+  shutdown: graceful
+
+spring:
+  application:
+    name: auth-service
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/auth_db}
+    username: ${SPRING_DATASOURCE_USERNAME:auth}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+# JWT: secret MUST be base64-encoded and >= 256 bits. Override JWT_SECRET in production.
+jwt:
+  secret: ${JWT_SECRET:ZGV2LW9ubHktc2VjcmV0LXBsZWFzZS1vdmVycmlkZS1pbi1wcm9kLTAxMjM0NTY3ODlBQkNERUY=}
+  expiration-ms: ${JWT_EXPIRATION_MS:36000000}
+
+# Seed user (local/dev defaults; override in real environments)
+auth:
+  seed:
+    email: ${AUTH_SEED_EMAIL:testuser@test.com}
+    password: ${AUTH_SEED_PASSWORD:password123}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 100ms,200ms,400ms

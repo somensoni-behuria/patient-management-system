@@ -1,0 +1,77 @@
+server:
+  port: 4000
+  shutdown: graceful
+
+spring:
+  application:
+    name: patient-service
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/patient_db}
+    username: ${SPRING_DATASOURCE_USERNAME:patient}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        retries: 3
+
+# gRPC client -> billing-service (internal, plaintext)
+grpc:
+  client:
+    billing-service:
+      address: static://${BILLING_SERVICE_HOST:localhost}:${BILLING_SERVICE_GRPC_PORT:9005}
+      negotiation-type: plaintext
+
+# Resilience4j on the billing gRPC call (keeps p99 bounded under partial failure)
+resilience4j:
+  retry:
+    instances:
+      billingService:
+        max-attempts: 3
+        wait-duration: 200ms
+  circuitbreaker:
+    instances:
+      billingService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 100ms,200ms,400ms
+  observations:
+    key-values:
+      application: ${spring.application.name}

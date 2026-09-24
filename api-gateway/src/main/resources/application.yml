@@ -1,0 +1,95 @@
+server:
+  port: 4004
+  shutdown: graceful
+
+spring:
+  application:
+    name: api-gateway
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # --- Auth service (public) ---
+            - id: auth-service-route
+              uri: ${AUTH_SERVICE_URL:http://localhost:4005}
+              predicates:
+                - Path=/auth/**
+              filters:
+                - StripPrefix=1
+
+            # --- Patient service (JWT-protected) ---
+            - id: patient-service-route
+              uri: ${PATIENT_SERVICE_URL:http://localhost:4000}
+              predicates:
+                - Path=/api/patients/**
+              filters:
+                - StripPrefix=1
+                - JwtValidation
+
+            # --- Analytics service (JWT-protected, read-only) ---
+            - id: analytics-service-route
+              uri: ${ANALYTICS_SERVICE_URL:http://localhost:4002}
+              predicates:
+                - Path=/api/analytics/**
+              filters:
+                - StripPrefix=1
+                - JwtValidation
+
+            # --- Aggregated API docs (public) ---
+            - id: patient-service-api-docs
+              uri: ${PATIENT_SERVICE_URL:http://localhost:4000}
+              predicates:
+                - Path=/api-docs/patients
+              filters:
+                - RewritePath=/api-docs/patients,/v3/api-docs
+            - id: auth-service-api-docs
+              uri: ${AUTH_SERVICE_URL:http://localhost:4005}
+              predicates:
+                - Path=/api-docs/auth
+              filters:
+                - RewritePath=/api-docs/auth,/v3/api-docs
+            - id: analytics-service-api-docs
+              uri: ${ANALYTICS_SERVICE_URL:http://localhost:4002}
+              predicates:
+                - Path=/api-docs/analytics
+              filters:
+                - RewritePath=/api-docs/analytics,/v3/api-docs
+
+# Base URL the JWT filter uses to reach auth-service /validate
+auth:
+  service:
+    url: ${AUTH_SERVICE_URL:http://localhost:4005}
+
+# Aggregated Swagger UI (served at the gateway): dropdown of downstream service docs
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: auth-service
+        url: /api-docs/auth
+      - name: patient-service
+        url: /api-docs/patients
+      - name: analytics-service
+        url: /api-docs/analytics
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 100ms,200ms,400ms

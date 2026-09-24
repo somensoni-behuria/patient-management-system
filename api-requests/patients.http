@@ -1,0 +1,43 @@
+@gateway = http://localhost:4004
+# Paste a token from POST /auth/login here:
+@token = REPLACE_WITH_JWT
+
+### Get all patients (JWT-protected)
+GET {{gateway}}/api/patients
+Authorization: Bearer {{token}}
+
+### Create a patient
+POST {{gateway}}/api/patients
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Grace Hopper",
+  "email": "grace.hopper@example.com",
+  "address": "1 Navy Yard",
+  "dateOfBirth": "1906-12-09",
+  "registeredDate": "2025-01-01"
+}
+
+### Get a patient by id
+GET {{gateway}}/api/patients/REPLACE_WITH_ID
+Authorization: Bearer {{token}}
+
+### Update a patient
+PUT {{gateway}}/api/patients/REPLACE_WITH_ID
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Grace Hopper",
+  "email": "grace.hopper@example.com",
+  "address": "2 Navy Yard",
+  "dateOfBirth": "1906-12-09"
+}
+
+### Delete a patient
+DELETE {{gateway}}/api/patients/REPLACE_WITH_ID
+Authorization: Bearer {{token}}
+
+### Missing token -> 401
+GET {{gateway}}/api/patients

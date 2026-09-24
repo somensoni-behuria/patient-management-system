@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "patient.events";
+
+// Event published to Kafka whenever a patient is created. Consumed by the notification-service
+// and the analytics-service. Kept as a Protobuf schema so producer/consumers share one contract.
+
+message PatientEvent {
+  string patient_id = 1;
+  string name = 2;
+  string email = 3;
+  string event_type = 4; // e.g. PATIENT_CREATED
+}

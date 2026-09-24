@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "billing";
+
+service BillingService {
+  // Creates a billing account for a newly registered patient.
+  rpc CreateBillingAccount (BillingRequest) returns (BillingResponse);
+}
+
+message BillingRequest {
+  string patient_id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message BillingResponse {
+  string account_id = 1;
+  string status = 2;
+}

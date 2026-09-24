@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "patient.events";
+
+// Consumer-side copy of the patient event contract. Must stay in sync with patient-service.
+
+message PatientEvent {
+  string patient_id = 1;
+  string name = 2;
+  string email = 3;
+  string event_type = 4;
+}
