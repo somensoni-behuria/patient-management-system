@@ -1,5 +1,7 @@
 # Patient Management System
 
+[![CI](https://github.com/somensoni-behuria/patient-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/somensoni-behuria/patient-management-system/actions/workflows/ci.yml)
+
 A production-style **microservices** patient management system built with **Java 21** and
 **Spring Boot 3.5**. Services communicate over **REST**, **gRPC**, and **Kafka**, sit behind a
 **Spring Cloud Gateway** with **JWT** auth, and ship with **Docker Compose**, an **AWS CDK**

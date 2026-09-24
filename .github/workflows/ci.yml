@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+# Cancel superseded runs for the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build & test (services)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Builds every module and runs unit tests. protoc/grpc plugins are fetched from Maven
+      # Central via the protobuf-maven-plugin (protocArtifact), so no system protoc is needed.
+      # Integration tests are gated behind the 'integration' profile (they need a running stack),
+      # so `verify` skips them here.
+      - name: Build and test
+        run: mvn -B -ntp verify
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/*.xml'
+          if-no-files-found: ignore
+          retention-days: 7
+
+  infrastructure:
+    name: Compile CDK infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # The infrastructure module is a standalone AWS CDK app (not part of the Spring reactor),
+      # so compile it separately to keep it building.
+      - name: Compile CDK app
+        run: mvn -B -ntp -f infrastructure/pom.xml compile
